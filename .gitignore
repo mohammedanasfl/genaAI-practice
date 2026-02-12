@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environment
+venv/
+.env/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Uploaded documents
+uploads/
+*.pdf
+*.docx
+*.txt
+
+# FAISS / vector DB
+*.faiss
+index.faiss
+*.pkl
+
+# Chunk files
+*_chunks.txt
+chunks.txt
+
+# Registry / cache
+doc_registry.json
+
+# dotenv
+.env
+
+# Temporary
+*.tmp
