@@ -2,23 +2,39 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
+*.pyd
 *.so
 .Python
+*.sqlite3
+
+# Virtual environment
 venv/
 env/
 ENV/
+.env/
 
 # Environment variables
 .env
 
-# FAISS index
+# FAISS index / vector DB
 *.faiss
+index.faiss
+*.pkl
 
 # Uploads
 uploads/
 *.pdf
 *.txt
 *.docx
+
+# Chunk files
+*_chunks.txt
+chunks.txt
+
+# Registry / cache
+doc_registry.json
 
 # IDE
 .vscode/
@@ -30,5 +46,8 @@ uploads/
 .DS_Store
 Thumbs.db
 
-# Registry
-doc_registry.json
+# Logs
+*.log
+
+# Temporary
+*.tmp
