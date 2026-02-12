@@ -38,6 +38,29 @@ rag_backend/
 
 ## Setup
 
+### Option 1: Docker (Recommended)
+
+```bash
+git clone https://github.com/mohammedanasfl/genaAI-practice.git
+cd genaAI-practice
+
+# Setup environment
+cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY
+
+# Run with Docker Compose
+docker-compose up --build
+```
+
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+
+See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
+
+### Option 2: Manual Setup
+
+#### Backend
+
 ### 1. Clone the repository
 
 ```bash

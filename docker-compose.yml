@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./rag_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./rag_backend/uploads:/app/uploads
+      - ./rag_backend/doc_registry.json:/app/doc_registry.json
+      - ./rag_backend/index.faiss:/app/index.faiss
+    networks:
+      - rag-network
+
+  frontend:
+    build: ./rag_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
