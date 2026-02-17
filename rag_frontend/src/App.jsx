@@ -1,55 +1,89 @@
-import { useState } from 'react';
-import UploadBox from './components/UploadBox';
-import SummaryPanel from './components/SummaryPanel';
-import Suggestions from './components/Suggestions';
-import ChatBox from './components/ChatBox';
-import './styles.css';
+import { useState, useEffect } from 'react';
+import { Box } from '@mui/material';
+import SourcesPanel from './components/SourcesPanel';
+import DocumentPanel from './components/DocumentPanel';
+import { uploadDocument, queryDocument } from './services/api';
 
 function App() {
-    const [summary, setSummary] = useState('');
-    const [insights, setInsights] = useState([]);
-    const [suggestedQuestions, setSuggestedQuestions] = useState([]);
-    const [followUpQuestions, setFollowUpQuestions] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [selectedDoc, setSelectedDoc] = useState(null);
 
-    const handleUploadSuccess = (result) => {
-        setSummary(result.summary);
-        setInsights(result.insights || []);
-        setSuggestedQuestions(result.suggested_questions || []);
-    };
+  const handleUpload = async (file) => {
+    try {
+      const result = await uploadDocument(file);
 
-    const handleQuestionClick = (question) => {
-        const input = document.querySelector('.chat-input');
-        if (input) {
-            input.value = question;
-            input.focus();
+      if (result.message && result.message.includes('already exists')) {
+        alert(result.message);
+      }
+
+      const newDoc = {
+        hash: result.hash,
+        filename: result.filename,
+        summary: result.summary,
+        suggested_questions: result.suggested_questions || [],
+        insights: result.insights || [],
+      };
+
+      setDocuments((prev) => {
+        const existing = prev.find((d) => d.hash === result.hash);
+        if (existing) {
+          return prev.map((d) => (d.hash === result.hash ? newDoc : d));
         }
-    };
+        return [...prev, newDoc];
+      });
 
-    const handleQuestionSubmit = (followUps) => {
-        setFollowUpQuestions(followUps || []);
-    };
+      setSelectedDoc(newDoc);
+    } catch (error) {
+      alert('Upload failed: ' + error.message);
+    }
+  };
 
-    return (
-        <div className="app">
-            <header className="header">
-                <h1>RAG DOCUMENT ASSISTANT</h1>
-                <div className="header-line"></div>
-            </header>
+  const handleSelectDoc = (doc) => {
+    setSelectedDoc(doc);
+  };
 
-            <div className="container">
-                <UploadBox onUploadSuccess={handleUploadSuccess} />
+  const handleQuery = async (question) => {
+    if (!selectedDoc) {
+      throw new Error('No document selected');
+    }
+    return await queryDocument(question);
+  };
 
-                <SummaryPanel summary={summary} insights={insights} />
+  const handleDelete = (doc) => {
+    if (window.confirm(`Delete "${doc.filename}"?`)) {
+      setDocuments((prev) => prev.filter((d) => d.hash !== doc.hash));
+      if (selectedDoc?.hash === doc.hash) {
+        setSelectedDoc(null);
+      }
+    }
+  };
 
-                <Suggestions
-                    questions={suggestedQuestions}
-                    onQuestionClick={handleQuestionClick}
-                />
+  return (
+    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: '100vh', overflow: 'hidden', backgroundColor: '#000000' }}>
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <SourcesPanel
+          documents={documents}
+          selectedDoc={selectedDoc}
+          onSelectDoc={handleSelectDoc}
+          onUpload={handleUpload}
+          onDelete={handleDelete}
+        />
+      </Box>
 
-                <ChatBox onQuestionSubmit={handleQuestionSubmit} />
-            </div>
-        </div>
-    );
+      {/* Mobile: Show sources panel at top */}
+      <Box sx={{ display: { xs: 'block', md: 'none' }, maxHeight: '40vh', overflow: 'auto' }}>
+        <SourcesPanel
+          documents={documents}
+          selectedDoc={selectedDoc}
+          onSelectDoc={handleSelectDoc}
+          onUpload={handleUpload}
+          onDelete={handleDelete}
+        />
+      </Box>
+
+      <DocumentPanel document={selectedDoc} onQuery={handleQuery} />
+    </Box>
+  );
 }
 
 export default App;

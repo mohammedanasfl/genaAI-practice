@@ -38,10 +38,31 @@ async def upload_file(file: UploadFile = File(...)):
 
     if hash_exists(doc_hash):
         info = get_doc_info(doc_hash)
+        chunk_file = info["chunk_file"]
+
+        chunks = []
+        with open(chunk_file, "r", encoding="utf-8") as f:
+            content = f.read()
+            parts = content.split("CHUNK ")
+            for part in parts[1:]:
+                lines = part.split('\n', 1)
+                if len(lines) > 1:
+                    chunk_content = lines[1].strip()
+                    if chunk_content:
+                        chunks.append(chunk_content)
+
+        vectors = embed_chunks(chunks)
+        save_index(vectors)
+        save_doc(doc_hash, info)
+
+        suggestions = generate_doc_suggestions("\n".join(chunks))
+
         return {
             "message": "Document already exists",
             "filename": info["filename"],
-            "summary": info["summary"],
+            "summary": suggestions["summary"],
+            "suggested_questions": suggestions["questions"],
+            "insights": suggestions["insights"],
             "hash": doc_hash
         }
 
@@ -70,7 +91,7 @@ async def upload_file(file: UploadFile = File(...)):
     })
 
     return {
-        "message": "Document processed",
+        "message": "Document processed successfully. Previous document has been replaced.",
         "hash": doc_hash,
         "summary": suggestions["summary"],
         "suggested_questions": suggestions["questions"],
@@ -80,16 +101,19 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/query")
 async def query_doc(data: QueryRequest):
-
     chunks = search_chunks(data.question)
-
-    if not chunks:
-        return {"answer": "No document uploaded yet"}
-
     result = generate_answer_with_suggestions(data.question, chunks)
+
+    confidence = 0.0
+    if "evaluation" in result and "confidence" in result["evaluation"]:
+        try:
+            confidence = float(result["evaluation"]["confidence"]) * 100
+        except:
+            confidence = 0.0
 
     return {
         "question": data.question,
         "answer": result["answer"],
-        "follow_up_questions": result["questions"]
+        "follow_up_questions": result["questions"],
+        "confidence": round(confidence, 1)
     }

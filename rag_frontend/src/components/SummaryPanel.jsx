@@ -1,22 +1,44 @@
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Description, Lightbulb } from '@mui/icons-material';
+
 const SummaryPanel = ({ summary, insights }) => {
     if (!summary) return null;
 
     return (
-        <div className="summary-panel">
-            <h3>DOCUMENT SUMMARY</h3>
-            <p className="summary-text">{summary}</p>
+        <Card>
+            <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Description sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">
+                        Document Summary
+                    </Typography>
+                </Box>
+                <Typography variant="body1" paragraph>
+                    {summary}
+                </Typography>
 
-            {insights && insights.length > 0 && (
-                <>
-                    <h3>INSIGHTS</h3>
-                    <ul className="insights-list">
-                        {insights.map((insight, idx) => (
-                            <li key={idx}>{insight}</li>
-                        ))}
-                    </ul>
-                </>
-            )}
-        </div>
+                {insights && insights.length > 0 && (
+                    <Box sx={{ mt: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <Lightbulb sx={{ mr: 1, color: 'primary.main' }} />
+                            <Typography variant="h6">
+                                Key Insights
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {insights.map((insight, index) => (
+                                <Chip
+                                    key={index}
+                                    label={insight}
+                                    color="primary"
+                                    variant="outlined"
+                                />
+                            ))}
+                        </Box>
+                    </Box>
+                )}
+            </CardContent>
+        </Card>
     );
 };
 
